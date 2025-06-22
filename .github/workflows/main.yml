@@ -1,8 +1,16 @@
-name: Main CI
+name: Build and Deploy to Amplify
 
 on:
   workflow_dispatch:
 
 jobs:
-  call-react-build:
-    uses: ./.github/workflows/aws-deploy-CICD.yml
+  call-reusable:
+    uses: /.github/workflows/aws-deploy-CICD.yml@main
+    with:
+      app_id: d1i4vrzp8gvdzb
+      branch: staging
+      region: ap-south-1           
+      artifact_dir: build         
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
