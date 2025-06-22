@@ -5,7 +5,7 @@ on:
 
 jobs:
   call-reusable:
-    uses: /.github/workflows/aws-deploy-CICD.yml@main
+    uses: ./.github/workflows/aws-deploy-CICD.yml
     with:
       app_id: d1i4vrzp8gvdzb
       branch: staging
