@@ -65,12 +65,12 @@ jobs:
 
       - name: Deploy to AWS Amplify
         run: |
-          zip -r deploy.zip .
+          zip -r build.zip .
           aws amplify start-deployment \
             --region ${{ inputs.region }} \
             --app-id ${{ inputs.app_id }} \
             --branch-name ${{ inputs.branch }} \
-            --file deploy.zip
+            --file build.zip
         working-directory: dist
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
