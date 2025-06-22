@@ -1,0 +1,8 @@
+name: Main CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-react-build:
+    uses: ./.github/workflows/aws-deploy-CICD.yml
