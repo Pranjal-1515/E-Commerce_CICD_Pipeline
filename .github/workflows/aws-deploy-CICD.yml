@@ -1,40 +1,77 @@
-name: Build and Deploy on AWS
+name: Build and Deploy to AWS Amplify
 
-on: 
-   workflow_call:
+on:
+  workflow_call:
+    inputs:
+      app_id:
+        description: "AWS Amplify App ID"
+        required: true
+        type: string
+      branch:
+        description: "Amplify branch name"
+        required: true
+        type: string
+      region:
+        description: "AWS region for Amplify app"
+        required: true
+        type: string
+      artifact_dir:
+        description: "Build directory to deploy"
+        required: false
+        type: string
+        default: "build"
+
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
 
 jobs:
-   Build:
-     runs-on: ubuntu-latest
-
-     steps:
-      - name: Checkout code
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build React app
+      - name: Build project
         run: npm run build
         env:
-          CI: false
+           CI: false
 
-      - name: Upload production-ready build artifacts
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: react-build
-          path: build/   
+          name: build-artifact
+          path: ${{ inputs.artifact_dir }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: dist
+
+      - name: Deploy to AWS Amplify
+        run: |
+          zip -r deploy.zip .
+          aws amplify start-deployment \
+            --region ${{ inputs.region }} \
+            --app-id ${{ inputs.app_id }} \
+            --branch-name ${{ inputs.branch }} \
+            --file deploy.zip
+        working-directory: dist
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
